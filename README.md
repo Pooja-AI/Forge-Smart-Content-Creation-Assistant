@@ -96,8 +96,8 @@ smart-content-platform/
 
 **1. Unzip the project**
 ```bash
-unzip smart-content-platform.zip
-cd smart-content-platform
+unzip Forge-Smart-Content-Creation-Assistant.zip
+cd Forge-Smart-Content-Creation-Assistant
 ```
 
 **2. Make sure Docker + Docker Compose are installed, then build and start everything**
@@ -138,7 +138,7 @@ ollama pull llama3    # downloads the model
 
 **2. Backend setup**
 ```bash
-cd smart-content-platform/backend
+cd Forge-Smart-Content-Creation-Assistant/backend
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -154,7 +154,7 @@ Check it's up: http://localhost:8000/api/health
 
 **3. Frontend setup (new terminal)**
 ```bash
-cd smart-content-platform/frontend
+cd Forge-Smart-Content-Creation-Assistant/frontend
 npm install
 npm run dev
 ```
