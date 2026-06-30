@@ -13,6 +13,10 @@ an **MCP-style tool registry** for web search / RAG, **Retrieval-Augmented
 Generation** via ChromaDB, a **FastAPI** backend, and a **React + Vite**
 frontend.
 
+**Author:** Pooja Sunkara
+
+---
+
 ## Architecture
 
 ```
@@ -84,42 +88,106 @@ smart-content-platform/
 └── README.md
 ```
 
-## Quick start (Docker, recommended)
+---
 
+## Steps to Run
+
+### Option A — Docker (recommended)
+
+**1. Unzip the project**
+```bash
+unzip smart-content-platform.zip
+cd smart-content-platform
+```
+
+**2. Make sure Docker + Docker Compose are installed, then build and start everything**
 ```bash
 docker compose up -d --build
-# Pull an open-source model into Ollama (first run only):
+```
+This builds and starts 3 containers: `forge-ollama`, `forge-backend`, `forge-frontend`.
+
+**3. Pull an open-source LLM into Ollama (first time only)**
+```bash
 docker exec -it forge-ollama ollama pull llama3
 ```
+Wait for the download to finish (~4.7GB for llama3).
 
-Open the UI at **http://localhost:5173**. The API is at **http://localhost:8000**
-(docs at `/docs`).
+**4. Open the app**
+- UI: http://localhost:5173
+- API docs: http://localhost:8000/docs
 
-## Quick start (local dev, no Docker)
-
-### 1. Backend
-
+**5. Check logs if something fails**
 ```bash
-cd backend
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
-
-# Install & run Ollama separately (https://ollama.com), then:
-ollama pull llama3
-
-uvicorn app.main:app --reload --port 8000
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
 
-### 2. Frontend
-
+**Stop everything**
 ```bash
-cd frontend
+docker compose down
+```
+
+### Option B — Run locally without Docker
+
+**1. Install and start Ollama**
+- Download from https://ollama.com
+```bash
+ollama serve          # starts the Ollama server (often auto-starts)
+ollama pull llama3    # downloads the model
+```
+
+**2. Backend setup**
+```bash
+cd smart-content-platform/backend
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+```
+Leave `.env` as-is for Ollama defaults (already points to `http://localhost:11434`, model `llama3`).
+
+Run the API:
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+Check it's up: http://localhost:8000/api/health
+
+**3. Frontend setup (new terminal)**
+```bash
+cd smart-content-platform/frontend
 npm install
 npm run dev
 ```
+Open http://localhost:5173 — Vite proxies `/api` calls to the backend automatically (see `vite.config.js`).
 
-Visit **http://localhost:5173**.
+### Using a different LLM (no local GPU? skip Ollama)
+
+Edit `backend/.env`:
+
+- **Gemini** (cloud, just needs an API key):
+  ```
+  LLM_PROVIDER=gemini
+  GEMINI_API_KEY=your_key_here
+  ```
+- **Any OpenAI-compatible host** (Groq, LM Studio, vLLM):
+  ```
+  LLM_PROVIDER=openai_compatible
+  OPENAI_COMPATIBLE_BASE_URL=https://api.groq.com/openai/v1
+  OPENAI_COMPATIBLE_API_KEY=your_key
+  OPENAI_COMPATIBLE_MODEL=llama-3.1-70b-versatile
+  ```
+You can also override the provider per-request from the "LLM backend" dropdown in the UI without restarting anything.
+
+### Quick smoke test once it's running
+
+1. Go to http://localhost:5173
+2. Type a topic, e.g. "Benefits of intermittent fasting for software engineers"
+3. Click **Generate content** and watch the press line light up stage by stage
+4. When done, review the draft, check the SEO/fact-check panels, and try exporting as PDF or DOCX
+
+If a stage hangs at "Working" for a long time, it's almost always Ollama still loading the model into memory on first request — check `docker compose logs -f ollama`.
+
+---
 
 ## Switching LLM providers
 
@@ -154,3 +222,9 @@ Set `LLM_PROVIDER` in `backend/.env` (or override per-request from the UI's
   Desktop, Claude Code, etc.) over stdio/SSE.
 - Web search uses DuckDuckGo (no API key). Swap in Tavily/SerpAPI/Bing for
   higher-volume production use.
+
+---
+
+## Credits
+
+Designed and built by **Pooja Sunkara**.
